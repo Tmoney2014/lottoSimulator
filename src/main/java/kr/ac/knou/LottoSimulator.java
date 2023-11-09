@@ -4,20 +4,21 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
-public class Main {
+public class LottoSimulator {
     public static void main(String[] args) {
-        int[] winningNumbers = lottoRandomNumbers(); // 로또 당첨번호 생성
+        int[] lottoNumbers = lottoRandomNumbers(); // 로또 당첨번호 생성
         int[] userNumbers = userNumbers(); // 사용자의 로또 번호 입력
-        int bonusNumber = bonusRandomNumbers(winningNumbers); // 보너스 번호 생성 (2등)
+        int bonusNumber = bonusRandomNumbers(lottoNumbers); // 보너스 번호 생성 (2등)
 
-        Arrays.sort(winningNumbers); // 정렬
+        Arrays.sort(lottoNumbers); // 정렬
         Arrays.sort(userNumbers); // 정렬
 
-        System.out.println("이주의 당첨 번호 : " + Arrays.toString(winningNumbers));
+        System.out.println("이주의 당첨 번호 : " + Arrays.toString(lottoNumbers));
         System.out.println("이주의 보너스 번호 : " + bonusNumber);
         System.out.println("당신의픽! : " + Arrays.toString(userNumbers));
 
-        int matchCount = countMatchingNumbers(winningNumbers, userNumbers);
+        int matchCount = countMatchingNumbers(lottoNumbers, userNumbers);
+        // 스위치문으로 등수출력
         switch (matchCount) {
             case 6:
                 System.out.println("1등입니다. 100억원입니다.");
@@ -44,14 +45,11 @@ public class Main {
     /**
      * 보너스 번호 생성
      * 우승 번호와 중복되지 않게 생성
-     * @param winningNumbers
-     * @return 보너스 번호
      */
     private static int bonusRandomNumbers(int[] winningNumbers) {
-        Random random = new Random();
         int bonusNumber;
         do {
-            bonusNumber = random.nextInt(45) + 1;
+            bonusNumber = randomLottoNumber();
         } while (contains(winningNumbers, bonusNumber)); // 중복이 생기면 다시 랜덤 숫자 생성
         return bonusNumber;
     }
@@ -60,18 +58,25 @@ public class Main {
      1~45까지의 중복이 없는 랜덤 번호 배열 생성
      */
     public static int[] lottoRandomNumbers() {
-        Random random = new Random();
         int[] numbers = new int[6];
 
         for (int i = 0; i < 6; i++) {
             int randomNumber;
             do {
-                randomNumber = random.nextInt(45) + 1; // 44까지의 랜덤 숫자를 생성 + 1 -> 1부터 45 까지의 랜덤숫자
+                randomNumber = randomLottoNumber();
             } while (contains(numbers, randomNumber)); // 중복이 생기면 다시 랜덤 숫자 생성
             numbers[i] = randomNumber;
         }
 
         return numbers;
+    }
+
+    /**
+     * 1~45까지의 랜덤 숫자 생성
+     */
+    public static int randomLottoNumber() {
+        Random random = new Random();
+        return random.nextInt(45) + 1; // 44까지의 랜덤 숫자를 생성 + 1 -> 1부터 45 까지의 랜덤숫자
     }
 
     /**
@@ -87,13 +92,15 @@ public class Main {
             boolean isInvalidInput;
             do {
                 System.out.print((i + 1) + "번째 선택 : ");
+                // 숫자가 들어왔을때만 검사
                 if (scanner.hasNextInt()) {
                     input = scanner.nextInt();
+                    // 인풋이 1~45 범위를 벗어나거나, 이미 입력한 숫자인지 확인
                     isInvalidInput = isNotCorrect(input) || contains(numbers, input);
                     if (isInvalidInput) {
                         System.out.println("중복되거나 범위를 벗어난 숫자입니다. 1 ~ 45 사이의 숫자를 입력하세요.");
                     }
-                    // 인트가 아닌 다른 무언가가 들어왔을때 처리
+                    // 숫자가 아닌 다른 무언가가 들어왔을때 처리
                 } else {
                     System.out.println("올바른 숫자가 아닙니다. 1 ~ 45 사이의 숫자를 입력하세요.");
                     isInvalidInput = true;
@@ -111,7 +118,6 @@ public class Main {
 
     /**
      * 숫자가 1~45 범위를 벗어나는지 확인
-     * @param number
      * @return 범위를 넘어가면 true, 아니면 false
      */
     public static boolean isNotCorrect(int number){
@@ -132,15 +138,17 @@ public class Main {
     }
 
     /**
-    두 배열에서 일치하는 숫자 개수 세기
+    로또 번호와 유저 번호가일치하는 숫자 개수 세기
      */
-    public static int countMatchingNumbers(int[] arr1, int[] arr2) {
+    public static int countMatchingNumbers(int[] lottoNumbers, int[] userNumbers) {
         int count = 0;
-        for (int num1 : arr1) {
-            for (int num2 : arr2) {
-                if (num1 == num2) {
+        // 로또 번호를 하나씩 비교
+        for (int lottoNumber : lottoNumbers) {
+            // 사용자의 번호중에 로또번호와 같은게 있는지 검사
+            for (int userNumber : userNumbers) {
+                if (lottoNumber == userNumber) {
                     count++;
-                    break; // 중복 카운트 방지
+                    break;
                 }
             }
         }
